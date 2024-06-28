@@ -49,13 +49,29 @@ func (p *Processor) Fetch(limit int) ([]events.Event, error) {
 	}
 
 	p.offset = updates[len(updates)-1].ID + 1
+
+	return res, nil
 }
 
-func (p *Processor) processMessage(event events.Event) {
+func (p *Processor) Process(event events.Event) error {
+	switch event.Type {
+	case events.Message:
+		return p.processMessage(event)
+	default:
+		return e.Wrap("can't proccess message", ErrUnknownEventType)
+	}
+}
+
+func (p *Processor) processMessage(event events.Event) error {
 	meta, err := meta(event)
 	if err != nil {
-		return e.Wrap("can't process message, err")
+		return e.Wrap("can't process message, err", err)
 	}
+
+	if err := p.doCmd(event.Text, meta.ChatID, meta.Username); err != nil {
+		return e.Wrap("can't process message", err)
+	}
+	return nil
 }
 
 func meta(event events.Event) (Meta, error) {
@@ -98,13 +114,4 @@ func fetchType(upd telegram.Update) events.Type {
 	}
 
 	return events.Message
-}
-
-func (p *Processor) Process(event events.Event) error {
-	switch event.Type {
-	case events.Message:
-		p.processMessage(event)
-	default:
-		return e.Wrap("can't proccess message", ErrUnknownEventType)
-	}
 }
