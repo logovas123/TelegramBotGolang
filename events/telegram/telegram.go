@@ -53,6 +53,9 @@ func (p *Processor) Fetch(limit int) ([]events.Event, error) {
 
 func (p *Processor) processMessage(event events.Event) {
 	meta, err := meta(event)
+	if err != nil {
+		return e.Wrap("can't process message, err")
+	}
 }
 
 func meta(event events.Event) (Meta, error) {
