@@ -4,22 +4,29 @@ import (
 	"flag"
 	"log"
 
-	"TelegramBotGolang/clients/telegram"
+	tgClient "TelegramBotGolang/clients/telegram"
+	"TelegramBotGolang/consumer/eventConsumer"
+	"TelegramBotGolang/events/telegram"
+	"TelegramBotGolang/storage/files"
+)
+
+const (
+	tgBotHost   = "api.telegram.org"
+	storagePath = "storage"
+	batchSize   = 100
 )
 
 func main() {
-	tgClient := telegram.New(tgBotHost, mustToken())
+	eventsProcessor := telegram.New(tgClient.New(tgBotHost, mustToken()), files.New(storagePath))
 
-	// fetcher = fetcher.New()
+	log.Print("service started")
 
-	// processor = processor.New()
+	consumer := eventConsumer.New(eventsProcessor, eventsProcessor, batchSize)
 
-	// consumer.Start(fetcher, processor)
+	if err := consumer.Start(); err != nil {
+		log.Fatal("service is stopped", err)
+	}
 }
-
-const (
-	tgBotHost = "api.telegram.org"
-)
 
 func mustToken() string {
 	token := flag.String("token-bot-token", "", "token for access to telegram bot")
