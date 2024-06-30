@@ -86,7 +86,7 @@ func (p *Processor) sendHelp(chatID int) error {
 }
 
 func (p *Processor) sendHello(chatID int) error {
-	return p.tg.SendMessage(chatID, msgHelp)
+	return p.tg.SendMessage(chatID, msgHello)
 }
 
 func isAddCmd(text string) bool {
